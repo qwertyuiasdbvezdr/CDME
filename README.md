@@ -1,17 +1,3 @@
-![](./imgs/Title.png)
-<p align="center"> 
-<a href="" ><img src="https://img.shields.io/badge/HOME-Paper-important.svg"></a>
-<a href="" ><img src="https://img.shields.io/badge/PDF-Paper-blueviolet.svg"></a>
-<a href="" ><img src="https://img.shields.io/badge/-Poster-ff69b7.svg"></a>
-<a href="" ><img src="https://img.shields.io/badge/-Video-brightgreen.svg"></a>
-</p>
-
-# Architecture
-
-![](./imgs/arch_small.png)
-
-### Shared Encoder-Decoder Network
-![](./imgs/network.png)
 
 # Usage
 ### Installation:
@@ -42,13 +28,3 @@ Use this line to predict results
 
 ![](./imgs/C60_half.png)
 ![](./imgs/RUIE_half.png)
-
-# Citation
-If our work is useful for your research, please cite our work
-
-        @ARTICLE{10336777,
-         author={Qi, Hao and Zhou, Huiyu and Dong, Junyu and Dong, Xinghui},
-         journal={IEEE Transactions on Geoscience and Remote Sensing}, 
-         title={Deep Color-Corrected Multi-scale Retinex Network for Underwater Image Enhancement}, 
-         year={2023},
-         doi={10.1109/TGRS.2023.3338611}}
