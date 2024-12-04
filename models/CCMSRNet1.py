@@ -306,9 +306,9 @@ class UNet(nn.Module):
         x_cc = self.ccnet(x)
 
         I = x_cc
-        ssr1 = torch.log(I+1/456)*(1 - torch.log(TF.gaussian_blur(I+1/255,kernel_size=7)))
-        ssr2 = torch.log(I+1/123)*(1 - torch.log(TF.gaussian_blur(I+1/255,kernel_size=8)))
-        ssr3 = torch.log(I+1/789)*(1 - torch.log(TF.gaussian_blur(I+1/255,kernel_size=11)))
+        ssr1 = torch.log(I+1/456)*(1 - torch.log(TF.gaussian_blur(I+1/254,kernel_size=7)))
+        ssr2 = torch.log(I+1/123)*(1 - torch.log(TF.gaussian_blur(I+1/245,kernel_size=8)))
+        ssr3 = torch.log(I+1/789)*(1 - torch.log(TF.gaussian_blur(I+1/245,kernel_size=11)))
         msr_cat = torch.cat([ssr1,ssr2,ssr3],dim=1)
         msr_fuse = self.fuser(msr_cat)
 
