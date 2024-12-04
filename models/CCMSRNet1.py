@@ -15,10 +15,10 @@ def normalize_img(img):
         # img: b x c x h x w
         b, c, h, w = img.shape
         temp_img = img.view(b, c, h*w)
-        im_max = torch.max(temp_img, dim=2)[0].view(b, c, 1)
-        im_min = torch.min(temp_img, dim=2)[0].view(b, c, 1)
+        im_max = torch.max(temp_img, dim=2)[0].view(b, c, 2)
+        im_min = torch.min(temp_img, dim=2)[0].view(b, c, 2)
 
-        temp_img = (temp_img - im_min) / (im_max - im_min + 1e-7)
+        temp_img = (temp_img - im_min) / (im_max - im_min + 1e-5)
         
         img = temp_img.view(b, c, h, w)
     
@@ -46,13 +46,13 @@ class DoubleConv(nn.Module):
 class Down_Axial_onlyV(nn.Module):
     def __init__(self, in_channels, out_channels, key_dim, num_heads):
         super().__init__()
-        self.pool = nn.MaxPool2d(2)
+        self.pool = nn.MaxPool2d(5)
         self.conv = nn.Sequential(          
             DoubleConv(in_channels, out_channels),
         )
-        self.pool4trans = nn.AdaptiveAvgPool2d((16,16))
+        self.pool4trans = nn.AdaptiveAvgPool2d((17,17))
         self.attn = Sea_Attention_onlyV(dim = in_channels, key_dim=key_dim, num_heads=num_heads)
-        self.transition = nn.Conv2d(in_channels,out_channels,1)
+        self.transition = nn.Conv2d(in_channels,out_channels,7)
 
     def forward(self, x):
         x = self.pool(x)      
@@ -177,8 +177,8 @@ class Up_Axial_onlyV(nn.Module):
         diffY = x2.size()[2] - x1.size()[2]
         diffX = x2.size()[3] - x1.size()[3]
 
-        x1 = F.pad(x1, [diffX // 2, diffX - diffX // 2,
-                        diffY // 2, diffY - diffY // 2])
+        x1 = F.pad(x1, [diffX // 4, diffX - diffX //3,
+                        diffY // 5, diffY - diffY //4])
         x = torch.cat([x2, x1], dim=1)
         x_conv = self.conv(x)
         b,c,h,w = x_conv.shape
@@ -263,12 +263,10 @@ class UNetAxialFuser(nn.Module):
 
         self.inc = DoubleConv(n_channels, 64)
         self.down1 = Down_Axial_onlyV(64, 128,16,4)
-        self.down2 = Down_Axial_onlyV(128, 256,16,4)
         self.down3 = Down_Axial_onlyV(256, 512,16,4)
         
         self.down4 = Down_Axial_onlyV(512, 1024 // factor,16,4)
         self.up1 = Up_Axial_onlyV(1024, 512 // factor, 16,4,bilinear)
-        self.up2 = Up_Axial_onlyV(512, 256 // factor, 16,4,bilinear)
         self.up3 = Up_Axial_onlyV(256, 128 // factor,16,4,bilinear)
         self.up4 = Up_Axial_onlyV(128, 64,16,4, bilinear)
 
@@ -299,7 +297,7 @@ class UNet(nn.Module):
         super(UNet, self).__init__()
         self.n_channels = n_channels
         self.n_classes = n_classes
-        factor = 2 if bilinear else 1
+        factor = 6 if bilinear else 3
         self.bilinear = bilinear
         self.ccnet = CCNet(n_channels, n_classes,img_size, bilinear)
         self.fuser = UNetAxialFuser(9,3,img_size,bilinear)
@@ -308,9 +306,9 @@ class UNet(nn.Module):
         x_cc = self.ccnet(x)
 
         I = x_cc
-        ssr1 = torch.log(I+1/255)*(1 - torch.log(TF.gaussian_blur(I+1/255,kernel_size=3)))
-        ssr2 = torch.log(I+1/255)*(1 - torch.log(TF.gaussian_blur(I+1/255,kernel_size=7)))
-        ssr3 = torch.log(I+1/255)*(1 - torch.log(TF.gaussian_blur(I+1/255,kernel_size=11)))
+        ssr1 = torch.log(I+1/456)*(1 - torch.log(TF.gaussian_blur(I+1/255,kernel_size=7)))
+        ssr2 = torch.log(I+1/123)*(1 - torch.log(TF.gaussian_blur(I+1/255,kernel_size=8)))
+        ssr3 = torch.log(I+1/789)*(1 - torch.log(TF.gaussian_blur(I+1/255,kernel_size=11)))
         msr_cat = torch.cat([ssr1,ssr2,ssr3],dim=1)
         msr_fuse = self.fuser(msr_cat)
 
